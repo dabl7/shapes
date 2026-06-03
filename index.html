@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shapes Calculator BABFT</title>
+  <link rel="icon" href="./logo.png" type="image/png">
+</head>
+<body style=background-color:#707070>
+  <h2>Shapes Calculator (for BABFT)</h2>
+
+  <label>Mode:</label>
+    <button id="circle">Circle</button>
+    <button id="sphere">Sphere</button>
+    <button id="cone">Cone</button>
+    <button id="torus">Torus (donut)</button>
+  <br><br>
+
+  <label id="circle1" style="display:none;">Circle diameter (studs): <input id="d_circle" type="number" step="any" value="10"></label>
+  <br id="circle2" style="display:none;">
+  <label id="circle3" style="display:none;">Degrees for rotating (smaller number = smoother): <input id="deg_circle" type="number" step="any" value="15"></label>
+  <br id="circle4" style="display:none;">
+  
+  <label id="sphere1" style="display:none;">Sphere diameter (studs): <input id="d_sphere" type="number" step="any" value="20"></label>
+  <br id="sphere2" style="display:none;">
+  <label id="sphere3" style="display:none;">Degrees for rotating (smaller number = smoother): <input id="deg_sphere" type="number" step="any" value="22.5"></label>
+  <br id="sphere4" style="display:none;">
+
+  <label id="cone1" style="display:none;">Cone type:
+    <select id="type">
+      <option value="full">Full (with peak)</option>
+      <option value="broken">Broken</option>
+    </select>
+  </label>
+  <br id="cone2" style="display:none;">
+  <label id="cone3" style="display:none;">Cone height (studs): <input id="h_cone" type="number" step="any" value="10"></label>
+  <br id="cone4" style="display:none;">
+  <label id="cone5" style="display:none;">Bottom diameter (studs): <input id="d_bot_cone" type="number" step="any" value="8"></label>
+  <br id="cone6" style="display:none;">
+  <label id="cone7" style="display:none;">Top diameter (studs): <input id="d_top_cone" type="number" step="any" value="6"></label>
+  <br id="cone8" style="display:none;"> <!--top diameter option only shows up if broken is true-->
+  <label id="cone9" style="display:none;">Degrees for rotating (smaller number = smoother): <input id="deg_cone" type="number" step="any" value="15"></label>
+  <br id="cone10" style="display:none;">
+  
+  <label id="torus1" style="display:none;">Outer diameter (studs): <input id="out_d_torus" type="number" step="any" value="10"></label>
+  <br id="torus2" style="display:none;">
+  <label id="torus3" style="display:none;">Inner diameter (studs): <input id="in_d_torus" type="number" step="any" value="1"></label>
+  <br id="torus4" style="display:none;">
+  <label id="torus5" style="display:none;">Degrees for rotating (smaller number = smoother): <input id="deg_torus" type="number" step="any" value="1"></label>
+  <br id="torus6" style="display:none;">
+  <label id="torus7" style="display:none;">Degrees for cloning it into a donut/torus: <input id="ddeg_torus" type="number" step="any" value="1"></label>
+  <br id="torus8" style="display:none;">
+
+  <button id="calc_circle" style="display:none;">Calculate</button>
+  <button id="calc_sphere" style="display:none;">Calculate</button>
+  <button id="calc_cone" style="display:none;">Calculate</button>
+  <button id="calc_torus" style="display:none;">Calculate</button>  
+
+  <pre style="font-size: 20px;font-weight: normal" id="output">(Choose a mode)</pre>
+  <br><pre style="font-size: 9px;">v1.0.0 (YouTube: @dabl2829)</pre>
+
+  <script>
+    //shapes calculator (by @dabl2928 on youtube)
+    //started (2026 Apr 28)
+    //working (2026 Apr 29)
+    //v1.0.0
+
+    //sphere
+    //cone
+    //torus
+
+    //display inputs with a for loop, show top diameter only if broken is true
+
+    function round(n,d=2) {
+      p=Math.pow(10,d)
+      return Math.round(n*p)/p //default rounds to 2 decimals
+    
+    }
+    function input(id) {
+      return document.getElementById(id)
+    }
+
+    function isNearlyInteger(x,e=1e-9) {
+      return Math.abs(Math.round(x)-x)<e //allows numbers like 2.000000000004 or 1.999999999999998 or whatever (computer math bug because its binary)
+    }
+
+    function display(list,onoff) {
+      for (let id of list) {
+        input(id).style.display=onoff
+      }
+    }
+
+    //grouped inputs lists
+    lcircle=['circle1','circle2','circle3','circle4',"calc_circle"]
+    lsphere=['sphere1','sphere2','sphere3','sphere4','calc_sphere']
+    lcone=['cone1','cone2','cone3','cone4','cone5','cone6','cone9','cone10','calc_cone']
+    ltorus=['torus1','torus2','torus3','torus4','torus5','torus6','torus7','torus8','calc_torus']
+
+
+    function circleinputs () {
+      display(lcircle,'')
+      display(lsphere,'none')
+      display(lcone,'none')
+      display(ltorus,'none')
+      ASCIIcircle()
+    }
+
+    function sphereinputs () {
+      display(lcircle,'none')
+      display(lsphere,'')
+      display(lcone,'none')
+      display(ltorus,'none')
+      ASCIIsphere()
+    }
+
+    function coneinputs () {
+      display(lcircle,'none')
+      display(lsphere,'none')
+      display(lcone,'')
+      display(ltorus,'none')
+      ASCIIfullcone()
+    }
+
+    function torusinputs () {
+      display(lcircle,'none')
+      display(lsphere,'none')
+      display(lcone,'none')
+      display(ltorus,'')
+      ASCIItorus()
+    }
+
+
+    function ASCIIcircle() {
+      a='\n'
+      a+='                   ....\n'
+      a+='           .~:++==oooooo==++:~~\n'
+      a+='       .~+=ooooooooooooooooooo==+:.\n'
+      a+='     ~+oooooooooooooooooooooooooooo+~.\n'
+      a+='   ~+o=oooooooooooooooooooooooooooooo=~\n'
+      a+='  :=ooooooooooooooooooooooooooooooooooo+\n'
+      a+=' :oooooooooooooooooooooooooooooooooooooo+\n'
+      a+='~oooooooooooooooooooooooooooooooooooooooo:\n'
+      a+='+ooooooooooooooooooooooooooooooooooooooooo\n'
+      a+='+=oooooooooooooooooooooooooooooooooooooooo.\n'
+      a+=':oooooooooooooooooooooooooooooooooooooooo+\n'
+      a+='.=ooooooooooooooooooooooooooooooooooooooo~\n'
+      a+=' ~oooooooooooooooooooooooooooooooooooooo:\n'
+      a+='  .+oooooooooooooooooooooooooooooooooo=~\n'
+      a+='    ~=oooooooooooooooooooooooooooooo=:\n'
+      a+='      ~:=o=oooooooooooooo=oooooooo+~.\n'
+      a+='         ~:+=oooooooooooo=ooo=+:~.\n'
+      a+='             .~~:::++:+:::~~..\n'
+      input('output').textContent=a
+      input('output').style.fontSize='11px'
+      input('output').style.fontWeight='bold'
+    }
+
+    function ASCIIsphere() {
+      a='\n'
+      a+='                         MMM$$@@@####%#%%#%####@$$MM                          \n'
+      a+='                      $$@####%#%%%%%%%%%%%%%%%%%%%%%#@$$                      \n'
+      a+='                  M$@#####%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%@$M                  \n'
+      a+='               M$@####%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#$M               \n'
+      a+='             $@#####%#%%%%%%%%%%%%%%%%^%%%%%%%%%%%%%%%%%%%%%%%#@$             \n'
+      a+='           $@@####%%%%%%%%%%%%%%%^^%%%%^^%^%%^%^%%%^%%%%%%%%%%%%%@$           \n'
+      a+='         M@@####%%%%%%%%%%%%%%%%^%%^^^^^^^^^^^^^^^^%%%^%%%%%%%%%%%%#$         \n'
+      a+='        $#####%%%%%%%%%%%%%%%%^%^^^%^^^^^^^^^^^^^^^^^^%^%^%%%%%%%%%%#$M       \n'
+      a+='      M@@###%#%%%%%%%%%%%%%%%^^^^%^^^^^^^^^^^^^^^^^^^^^^^%^^%%%%%%%%%%#M      \n'
+      a+='     $@@#####%%%%%%%%%%%%^^%%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%^%%^%%%%%%%%#$     \n'
+      a+='    M@@@###%%%%%%%%%%%%%%%%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%##$    \n'
+      a+='   M@@####%%%%%%%%%%%%%%^%%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%#M   \n'
+      a+='  M@@###%#%#%%%%%%%%%%%^%^^%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%^^%%%%%%%%%##M  \n'
+      a+='  $@@@###%%#%%%%%%%%%%%%%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%##@  \n'
+      a+=' M@@####%#%%%%%%%%%%%%^%^%%^%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%^%%%%%%%%%##M \n'
+      a+=' $$@@##%#%%%%%%%%%%%%%%%%^%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%^^%^%%%%%%%%%#$ \n'
+      a+='M$@@@#####%#%%%%%%%%%%^%^%^%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%### \n'
+      a+='M$@@#####%#%%%%%%%%%%%%%%%^%%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%^%%%%%%%%%%###M\n'
+      a+='$$@@@###%#%%#%%%%%%%%%%%%^%^^^^^%^^^^^^^^^^^^^^^^^^^^^^^^^^%%^%%%%%%%%%%%%###M\n'
+      a+='M$$@@####%#%%%%%%%%%%%%%%%%%^%%^^^^^^^^^^^^^^^^^^^^^^^^^^%^^%^%%%%%%%%%%%%%##M\n'
+      a+='M$@@@@@####%#%%%%%%%%%%%%%%^%%^^^%^^^^^^^^^^^^^^^^^^^^%^^^%^%%%%%%%%%%%%####@ \n'
+      a+=' $$@@@@#####%%%%%%%%%%%%%%%%%%%%^^%^^^^^^^^^^^^^^^^%^%^^%^^%%%%%%%%%%%%%%###@ \n'
+      a+=' M$$@@@########%%%%%%%%%%%%%%%%^%%%^^%^%^^%^%^%^^^%^^%%%%%%%%%%%%%%%%%#%###@M \n'
+      a+=' M$$$@@@@#####%%%%%%%%%%%%%%%%%%%%%%%^%%^%%^%^^%^%%^%%%%%%%%%%%%%%%%%%%###@$  \n'
+      a+='  M$$@@@@####%###%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%####@@$  \n'
+      a+='   M$$$@@@#@@####%%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%####@@$   \n'
+      a+='    M$$$$@@########%#%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#%#####@@$    \n'
+      a+='    MM$$$@@@@@#######%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%######@@@$     \n'
+      a+='      MM$$$@@@@@@######%###%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%###%#####@@@M      \n'
+      a+='       MM$$$$$@@@@@########%#%#%#%%%%%%%%%%%%%%%%%%%%%%%#%%#####@#@@@$M       \n'
+      a+='         MMM$$$@@@@@@@###########%###%%%%##%%%#%%#%############@@@@$M         \n'
+      a+='           MMM$$$@$@@@@@@@#################%###############@@@@@$$$           \n'
+      a+='            M MMM$$$$$@@@@@@#@@#######################@#@@#@@@$$MM            \n'
+      a+='                MMM$$$$$$@$@@@@@@@#@#@@#@#@#@###@@@@@@@@@@$$$MM               \n'
+      a+='                    MMM$$$$$$@$@@@@@@@@@@@@#@@@@@@@@@$$$$$MM                  \n'
+      a+='                         MMMM$$$$$$$$$$@$@$$$@$$$$$$$MMM                      \n'
+      a+='                                MMMMMMM$MM$MMMMMM                             \n'
+      input('output').textContent=a
+      input('output').style.fontSize='6px'
+      input('output').style.fontWeight='bold'
+    }
+
+    function ASCIIbrokencone() {
+      a='\n'
+      a+='         =ooooooooooooooooo:\n'
+      a+='        +ooooooooooooooooooo.\n'
+      a+='       ~oooooooooooooooooooo+\n'
+      a+='       =ooooooooooooooooooooo:\n'
+      a+='      +ooooooooooooooooooooooo.\n'
+      a+='     ~oooooooooooooooooooooooo+\n'
+      a+='     =ooooooooooooooooooooooooo:\n'
+      a+='    +ooooooooooooooooooooooooooo.\n'
+      a+='   ~oooooooooooooooooooooooooooo+\n'
+      a+='   =ooooooooooooooooooooooooooooo:\n'
+      a+='  +ooooooooooooooooooooooooooooooo.\n'
+      a+=' ~=ooooooooooooooooooooooooooooooo+\n'
+      a+='.===ooooooooooooooooooooooooooooo=o:\n'
+      input('output').textContent=a
+      input('output').style.fontSize='11px'
+      input('output').style.fontWeight='bold'
+    }
+
+    function ASCIIfullcone() {
+      a='\n'
+      a+='                  ~~\n'
+      a+='                 ~oo~\n'
+      a+='                ~o=o=~\n'
+      a+='               ~o=ooo=\n'
+      a+='              ~oooooo==~\n'
+      a+='             ~ooooooo===~\n'
+      a+='            ~o=ooooooooo=\n'
+      a+='           ~ooooooooooooo=~\n'
+      a+='          ~o=oooooooooooo==~\n'
+      a+='         ~o=ooooooooooooo===~\n'
+      a+='        :ooooooooooooooooooo=~\n'
+      a+='       ~ooooooooooooooooooooo=~\n'
+      a+='      :o=ooooooooooooooooooo===~\n'
+      a+='     ~oooooooooooooooooooooooo==~\n'
+      a+='    ~o=ooooooooooooooooooooooooo=~\n'
+      a+='   :ooooooooooooooooooooooooooooo=~\n'
+      a+='  ~o=ooooooooooooooooooooooooooo=o=~\n'
+      a+=' :o=oooooooooooooooooooooooooooooo==~\n'
+      a+='~o===================================~\n'
+      input('output').textContent=a
+      input('output').style.fontSize='11px'
+      input('output').style.fontWeight='bold'
+    }
+
+    function ASCIItorus() {
+      a='\n'
+      a+='                                                                          MMMM$$$$$$$$$MMM                          \n'
+      a+='                                                                MM$$@@###%%%%%%%%%%%%%%%%%##@@$$M                   \n'
+      a+='                                                          M$$@##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%###$$M              \n'
+      a+='                                                     M$@#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%##@$M           \n'
+      a+='                                                M$$@%%%%%%%%%%%^%%^^%%^^%^%^%%^%%%%%%%%%%%%%%%%%%%%%%%###@M         \n'
+      a+='                                            M$@#%%%%%%%%^%^^^^^^^^^^^^^%^%^%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%##@M       \n'
+      a+='                                         $$#%%%%%%^^%^^^^^^^^^^^^^^^%^^^%^^%^^%%%%%%%%%%%%%%%%%%%%%%%%%%%%###$      \n'
+      a+='                                     M$@%%%%%^%%^^^^^^^^^^^^^^^^^%^^^^^%^%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%###@M    \n'
+      a+='                                  M$#%%%%%^%^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%##@$   \n'
+      a+='                                $@%%%%%^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#@@M  \n'
+      a+='                             $@%%%%%^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%%%%%%%#########%#%%%%%%%%%%%%%%%%%%%%###$M \n'
+      a+='                          M$#%%%%^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%#%%%%#######@#######%%%%%%%%%%%%%%%%%%%%###@$ \n'
+      a+='                        $@%%%%%%^^^^^^^^^^^^^^^^^^^^^^%^%%%%%%%%%%%######@@@@@$@@$@@@$@@@###%%%%%%%%%%%%%%%%%%%###$M\n'
+      a+='                      $#%%%%^%^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%%####@@@$$$$$$$MM$MM$M$$$@@#%%%%%%%%%^^%^%%%%%%####$M\n'
+      a+='                    $#%%%%%^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%####@@@$$$$MMM                M@#%%%%%%^%%^%%%%%%%%%%%##@$\n'
+      a+='                  $%%%%%%^^^^^^^^^^^^^^^^^^^^%%%%%%%%%####@@@$$MM                        @%%%%%%%%%^%^%%%%%%%%%%#@@$\n'
+      a+='                $#%%%%^^^^^^^^^^^^^^^^^^^%^%%%%%%%%####@$$$M                            M#%%%%%%^^^%^%^%%%%%%%%##@@M\n'
+      a+='              $#%%%%^^^^^^^^^^^^^^^^^^%%%%%%%%%%#%#@@$$M                                #%%%%%^^%^^^^^%%%%%%%%%##@$M\n'
+      a+='            M@%%%%%%%^^^^^^^^^^^^^^%^^%%%%%%%###@$$MM                                  #%%%%%%%^^^^%^%^%%%%%%%%##@$ \n'
+      a+='           $%%%%%%%^^^^^^^^^^^^^^%%%%%%%%%####$$$M                                   M#%%%%^%^^^^%^^%^%^%%%%%%##@@$ \n'
+      a+='         M@%%%%%%^^^^^^^^^^^^^^%%%%%%%%%##@@$$M                                     $%%%%%^^^^^^^^^^^%^%%%%%%###@$M \n'
+      a+='        $#%%%%%^^%^^%%^%^^%^%^%%%%%%%###@$$M                                      M@%%%%^^^^^^^^^^^^%%^%%%%%%%#@@M  \n'
+      a+='       $%%%%%%%%^^%^^^^^%^%%%%%%%%%##@@$$M                                       $%%%%^^^^^^^^^^^^^^%%%%%%%%##@$$   \n'
+      a+='      @%%%%%%%^%^%^^^^%%%%%%%%%%%%#@@$$M                                       $#%%%%^^^^^^^^^^^^^%^%%%%%%%##@@$    \n'
+      a+='    M@%%%%%%%%^%%^%%%%%%%%%%%%###@@$M                                        $#%%%%^^^^^^^^^^^^^^^^%%%%%%%###@$     \n'
+      a+='    @%%%%%%%%%%^%%%%%%%%%%%%####@$$M                                       $#%%%^^^^^^^^^^^^^^^^^^%%%%%%###@@$      \n'
+      a+='   @%%%%%%%%%%%%%%%%%%%%%%%###@$$M                                      M$%%%%^^^^^^^^^^^^^^^^^^%%%%%%%%##@$$       \n'
+      a+='  $%%%%%%%%%%%%%%%%%%%%%%###@@$M                                      $#%^^^^^^^^^^^^^^^^^^^^^%%%%%%%%###@$$        \n'
+      a+=' M#%%%%%%%%%%%%%%%%%%%%#####$$M                                    $@%%^%%^^^^^^^^^^^^^^^^^^^^%%%%%%%##@@$M         \n'
+      a+=' $%%%%%%%%%%%%%%%%%%%%####@$$M                                  $@%%%%%^^^^^^^^^^^^^^^^^^^^%%%%%%%%%#@@$$M          \n'
+      a+='M#%%%%%%%%%%%%%%%%%%####@@$$M                               M$@%%^%%^^^^^^^^^^^^^^^^^^^^^%^%%%%%%%##@@$M            \n'
+      a+='$%%%%%%%%%%%%%%%%%%#%###@$$M                            M$$#%%^%^^^^^^^^^^^^^^^^^^^^^^^%^%%%%%%####@$M              \n'
+      a+='$%%%%%%%%%%%%%%%%%%%####@$$                         M$@#%%%^^%%^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%##@$$M                \n'
+      a+='@#%%%%%%%%%%%%%%%%%%%%##@$$                    M$@##%%%^%^%^^^^^^^^^^^^^^^^^^^^^^^%^%%%%%%%###@@$$                  \n'
+      a+='@%%%%%%%%%%%%%%%%%%%%%%%##@$MMM      MMM$$$@##%%%%^^%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%##@$$$                    \n'
+      a+='$#%%%%%%%%%%%%%%%%%%%%%%%%%%%%#%##%#%%%%%%%%%^%%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%^%%%%%%%####@$$$                      \n'
+      a+='$##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%#%##@@$$M                        \n'
+      a+=' @#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%^%%^^%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%####@$$MM                          \n'
+      a+=' $###%%%%%%%%%%^%%^^%%^%^^^%^^%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%###@$$$M                             \n'
+      a+='  $###%%%%%%%%%%%%%^%^%^%^%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%#####@@$$M                                \n'
+      a+='   $###%%%%%%%%%%%%%%^%%^%^^%^%^^%^^^^^^^^^^^^^^^^^^^%^^^^^^%%%%%%%%%%%%####@$$MM                                   \n'
+      a+='    $####%%%%%%%%%%%%%%^%%^%^^%^^%^^%^^%^^^^^^^^^^%^^%%%%%%%%%%%%%######@@$$MM                                      \n'
+      a+='     M$@####%%%%%%%%%%%%%%%%^%%%^%^%^^%^%%%%^^%%%%%%%%%%%%%%%%%%####@@$$$M                                          \n'
+      a+='       M$@@###%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#%######@@$$$M                                              \n'
+      a+='         M$$##@###%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#%######@@$$$MM                                                  \n'
+      a+='            M$$@@@@#########%%##%%%#%%#%%%#%######@@@@@@$$$MM                                                       \n'
+      a+='               MM$$$$@@@################@@#@@@@@@$$$$MM                                                             \n'
+      a+='                   MMMMM$$$$$$$$@$$$$$$$$$$$MMM                                                                     \n'
+      a+='                                 M                                                                                  \n'
+      input('output').textContent=a
+      input('output').style.fontSize='5px'
+      input('output').style.fontWeight='bold'
+    }
+
+
+    function circle() {
+      d=parseFloat(input('d_circle').value)
+      deg=parseFloat(input('deg_circle').value)
+
+      pi=Math.PI
+
+      d=round(d/2)*2
+
+      even=(360/deg)%2==0 //checks if its even and a full number of sides
+
+      n=360/deg //number of sides
+
+      circle_piece=round(d*Math.tan(pi/n)/2)*2
+
+      valid=(d>=0.06 && n>=6 && deg<=60 && deg>0 && even && circle_piece>=0.06)
+
+      time=n/2*0.0346 //time to load, seems to be about 29 parts/sec + slight decrease with many stacked pieces (because of many joints)
+      
+      if (valid) {
+        out=`================CIRCLE================\n`
+        out+=`Number of sides: ${n}\n\n`
+
+        out+=`Diameter: ${d} (amount in scale: ${round(d/2-1)}, both sides)\n`
+        out+=`Width: ${circle_piece} (amount in scale: ${round(circle_piece/2-1)}, both sides)\n\n`
+        out+=`Degrees for rotating: ${round(deg)}\n\n`
+        out+=`===DIMENSIONS===\n`
+        out+=`Part: ${circle_piece} x ${d} x (THICKNESS)\n`
+      } else { //ERROR: Odd number of pieces...
+        if (d<0.06) {
+          out=`ERROR: diameter is smaller than 0.06 (${d})`
+        } else if (deg<=0 || deg>60) {
+          out=`ERROR: Degrees for rotating aren't bigger than 0 or smaller/equal than 60 (${deg})`
+        } else if (circle_piece<0.06) {
+          out=`ERROR: Part width is smaller than 0.06, increase diameter or degrees for rotating (width: ${circle_piece})`
+        } else if (360%deg>=0.01) {
+        out=`ERROR: Incorrect degrees for rotation (you don't get a full number of pieces: ${round(n)})\n\n`
+        out+=`List of degrees that would work for your diameter (choose any):\n`
+        for (tn=6;tn<=3600;tn+=2) { //checks scenarios up to 3600 sides (runs 3600 times)
+          td=(360/tn) //degrees
+
+          tcircle_piece=round(d*Math.tan(pi/tn)/2)*2
+          bigenough=tcircle_piece>=0.06
+
+          nicenumber=(round(td,2)==td) //nice number means it has 2 decimal places max
+          if (nicenumber && bigenough) { //only if 2 decimals and big enough part
+            out+=` -degrees: ${td} (${tn} sides)\n`
+          }
+        }
+        } else {
+          out=`ERROR: Unknown error, comment your values`
+        }
+      }
+      input('output').textContent=out
+      input('output').style.fontSize='16px'
+      input('output').style.fontWeight='normal'
+    }
+
+    function sphere() {
+      d=parseFloat(input('d_sphere').value)
+      deg=parseFloat(input('deg_sphere').value)
+
+      pi=Math.PI
+
+      d=round(d/2)*2
+      even=(360/deg)%2==0 //checks if its even and a full number of sides
+      n=360/deg //number of sides
+
+      circle_piece=round(d*Math.tan(pi/n)/2)*2
+
+      valid=(d>=0.06 && n>=6 && deg<=60 && deg>0 && even && circle_piece>=0.06)
+
+      parts=(n/2)**2 //if 45 degrees then 16 parts
+      time=parts*0.0346 //time to load, seems to be about 29 parts/sec + slight decrease with many stacked pieces (because of many joints)
+      pt=[d,circle_piece,circle_piece] //dimensions, x, y, z
+      gl=n
+      gh=n/2
+      grid=[gl,gh]
+
+      if (pt[0]*pt[1]*pt[2]/8<1) {
+        blocks=parts
+        one=1
+      } else {
+        blocks=round(pt[0]*pt[1]*pt[2]/8,0)*parts
+        one=round(pt[0]*pt[1]*pt[2]/8,0)
+      }
+
+      if (valid) {
+        out=`================SPHERE================\n`
+        if (parts>1000) {out+=`WARNING: if you dont make it hollow then you could possibly crash the server (even with a single sphere)\n\n`}
+
+        out+=`Number of pieces: ${parts}\n`
+        out+=`Number of blocks: ${blocks} (${one} per part)\n\n`
+
+        out+=`Diameter: ${d} (amount in scale: ${round(d/2-1)}, both sides)\n`
+        out+=`Width: ${circle_piece} (amount in scale: ${round(circle_piece/2-1)}, four sides)\n\n`
+        out+=`Degrees for rotating: ${round(deg)}\n\n`
+        out+=`===DIMENSIONS===\n`
+        out+=`Part: ${circle_piece} x ${circle_piece} x ${d}\n`
+      } else {
+        if (d<0.06) {
+          out=`ERROR: diameter is smaller than 0.06 (${d})`
+        } else if (deg<=0 || deg>60) {
+          out=`ERROR: Degrees for rotating aren't bigger than 0 or smaller/equal than 60 (${deg})`
+        } else if (circle_piece<0.06) {
+          out=`ERROR: Part width is smaller than 0.06, increase diameter or degrees for rotating (width: ${circle_piece})`
+        } else if (360%deg>=0.01 || !even) {
+        out=`ERROR: Incorrect degrees for rotation (you don't get a full or even number of pieces: ${round(n)})\n\n`
+        out+=`List of degrees that would work for your diameter (choose any):\n`
+        for (tn=6;tn<=3600;tn+=2) { //checks scenarios up to 3600 sides (runs 3600 times)
+          td=(360/tn) //degrees
+
+          tcircle_piece=round(d*Math.tan(pi/tn)/2)*2
+          bigenough=tcircle_piece>=0.06
+
+          nicenumber=(round(td,2)==td) //nice number means it has 2 decimal places max
+          if (nicenumber && bigenough) { //only if 2 decimals and big enough part
+            out+=` -degrees: ${td}\n`
+          }
+        }
+        } else {
+          out=`ERROR: Unknown error, comment your values`
+        }
+      }
+      input('output').textContent=out
+      input('output').style.fontSize='16px'
+      input('output').style.fontWeight='normal'
+    }
+
+    function cone() {
+      type=input('type').value
+      height=parseFloat(input('h_cone').value)
+      bottom_d=parseFloat(input('d_bot_cone').value)
+      top_d=parseFloat(input('d_top_cone').value)
+      deg=parseFloat(input('deg_cone').value)
+
+      n=360/deg
+
+      even=(360/deg)%2==0 //checks if its even and a full number of sides
+
+      circle_bottom=round(bottom_d*Math.tan(Math.PI/n)/2,2)*2
+      if (type==`broken`) {
+        circle_top=round(top_d*Math.tan(Math.PI/n)/2,2)*2
+      } else {
+        circle_top=0
+        top_d=0
+      }
+
+      tilt_angle=round(Math.atan(height/(bottom_d/2-top_d/2))*180/Math.PI,2) //angle between base and cone wall
+      shape_height=round(Math.sqrt(height**2 + (bottom_d/2-top_d/2)**2),2)
+      alpha=round(Math.atan(shape_height/(circle_bottom/2-circle_top/2))*180/Math.PI,2) //angle between the bottom and the side of the triangle/trapezoid
+      side=round(Math.sqrt(shape_height**2 + (circle_bottom/2-circle_top/2)**2),2)
+
+      b=[circle_bottom,1,1] //bottom piece
+      t=[circle_top,1,1] //top piece
+      
+      valid=(height>=0.06 && n>=6 && deg<=60 && deg>0 && even && circle_bottom>=0.06)
+
+      if (valid) {
+        if (top_d==0) { //TRIANGLE SHAPE
+          tri_base=round((bottom_d * Math.tan(Math.PI/n))/2,2)*2
+
+          out=`==========CONE==========\n`
+          out+=`Bottom diameter: ${bottom_d} (amount in scale: ${round(bottom_d/2-1)})\n`
+          out+=`Bottom circle piece: ${circle_bottom} (amount in scale: ${round(circle_bottom/2-1)})\n`
+          out+=`Bottom height: 0.05 (amount in scale: 1.95)\n\n`
+
+          out+=`Triangle tilt angle: ${tilt_angle} deg\n`
+          out+=`Length: 0.05 (amount in scale: ${round(bottom_d-0.06)})\n\n`
+
+          out+=`Quadrouple mirror on new piece and angle by ${alpha}\n\n`
+
+          out+=`Triangle vertical side lengths: ${side} (amount in scale: ${round(side-circle_bottom)})\n`
+          out+=`Degrees for rotating: ${deg}\n`          
+        } else { //TRAPEZOID SHAPE
+          trap_top=round((top_d * Math.tan(Math.PI/n))/2,2)*2
+          trap_bottom=round((bottom_d * Math.tan(Math.PI/n))/2,2)*2
+
+          out=`==========CONE==========\n`
+          out+=`Top diameter: ${top_d}\n`
+          out+=`Bottom diameter: ${bottom_d}\n`
+          out+=`Cone height: ${height}\n`
+          out+=`Degrees for rotating: ${360/n}\n`
+          out+=`Trapezoid top length: ${trap_top} (amount in scale: ${circle_top/2-1})\n`
+          out+=`Trapezoid bottom length: ${trap_bottom} (amount in scale: ${circle_bottom/2-1})\n`
+          out+=`Trapezoid vertical side lengths: ${side}\n`
+          out+=`Trapezoid height: ${shape_height}\n`
+          out+=`Alpha: ${alpha} deg (trapezoid shape, side lines angle)\n`
+          out+=`Trapezoid tilt angle: ${tilt_angle} deg\n`
+        }
+      } else { //ERRORS
+        if (bottom_d<0.06) {
+          out=`ERROR: bottom diameter is smaller than 0.06 (${bottom_d})`
+        } else if (type=='broken' && top_d<0.06) {
+          out=`ERROR: top diameter is smaller than 0.06 (${top_d})`
+        } else if (360%deg>=0.01) {
+        out=`ERROR: Incorrect degrees for rotation (you don't get a full number of pieces: ${round(n)})\n\n`
+        out+=`List of degrees that would work for your diameter (choose any):\n`
+        for (tn=6;tn<=3600;tn+=2) { //checks scenarios up to 3600 sides (runs 3600 times)
+          td=(360/tn) //degrees
+
+          tcircle_piece=round(d*Math.tan(pi/tn)/2)*2
+          bigenough=tcircle_piece>=0.06
+
+          nicenumber=(round(td,2)==td) //nice number means it has 2 decimal places max
+          if (nicenumber && bigenough) { //only if 2 decimals and big enough part
+            out+=` -degrees: ${td}\n`
+          }
+        }
+        } else {
+          out=`ERROR: Unknown error, comment your values`
+        }
+      }
+
+      input('output').textContent=out
+      input('output').style.fontSize='16px'
+      input('output').style.fontWeight='normal'
+    }
+
+    function torus() {
+      outer_d=parseFloat(input('out_d_torus').value)
+      inner_d=parseFloat(input('in_d_torus').value)
+      d=parseFloat(input('deg_torus').value)
+      dd=parseFloat(input('ddeg_torus').value) //donut degrees
+
+      radius = (outer_d+inner_d)/4  //radius top down
+      cross = (outer_d-inner_d)/4 //cross section radius
+      q = round(360/d)
+      qd = round(360/dd)
+      base_CP = 2*round(cross*Math.tan(Math.PI/q)) //center piece for cross section circle only
+
+      out=`================TORUS================\n`
+      out+=`Cross section diameter: ${cross*2} (amount in scale: ${(cross*2)/2-1})\n`
+      out+=`Cross section piece height: ${round(base_CP)} (amount in scale: ${base_CP/2-1})\n`
+      out+=`Cross section piece width: ${round(base_CP)} (amount in scale: ${base_CP/2-1})\n`
+      
+      out+=`Degrees for rotating the cross section: ${360/q}\n\n`
+
+      for (i=0;i<Math.floor(q/4+1);i++) {
+          gap_fix = base_CP/2*Math.cos(Math.PI/180 * i*360/q)
+          position = radius + cross*Math.cos(Math.PI/2 - Math.PI/180 * i*360/q) + gap_fix
+          length = 2*round((2*position*Math.tan(Math.PI/qd)/2),2)
+          AIS = round((length - base_CP)/2,2)
+          out+=`-${i+1}th piece length: ${length} (amount in scale: ${AIS})`
+          if (i==0) {
+            out+=` the piece at the bottom and top\n`
+          } else if (i==1) {
+            out+=` move outwards now from top and bottom\n`
+          } else {
+            out+=`\n`
+          }
+      }
+      out+=`\nClone it to the other side using ${2*radius}\n`
+      out+=`Degrees for rotating the entire donut: ${360/qd}\n\n`
+
+      valid=(d<=60 && d>0 && dd<=60 && dd>0 && outer_d>=0.05 && inner_d>=0.05 && isNearlyInteger(360/d) && isNearlyInteger(360/dd) && isNearlyInteger(q/4))
+
+      if (valid) {
+        out+=``
+      } else {
+        out=`ERROR`
+      }
+
+      input('output').textContent=out
+      input('output').style.fontSize='16px'
+      input('output').style.fontWeight='normal'
+    }
+
+
+    input("circle").onclick=circleinputs
+    input("sphere").onclick=sphereinputs
+    input("cone").onclick=coneinputs
+    input("torus").onclick=torusinputs
+
+    input("calc_circle").onclick=circle
+    input("calc_sphere").onclick=sphere
+    input("calc_cone").onclick=cone
+    input("calc_torus").onclick=torus
+
+    input('type').onchange=e=>{
+      if (e.target.value === 'broken') {
+        input('cone7').style.display=''
+        input('cone8').style.display=''
+        ASCIIbrokencone()
+      } else {
+        input('cone7').style.display='none'
+        input('cone8').style.display='none'
+        ASCIIfullcone()
+      }
+    }
+  </script>
+</body>
