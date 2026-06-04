@@ -17,7 +17,7 @@
   <br><br>
 
   <label id="circle1" style="display:none;">Circle diameter (studs): <input id="d_circle" type="number" step="any" value="10"></label>
-  <br id="circle2" style="display:none;">
+  <br id="circle2" style="display:none;"> <!--show video links and stuff-->
   <label id="circle3" style="display:none;">Degrees for rotating (smaller number = smoother): <input id="deg_circle" type="number" step="any" value="15"></label>
   <br id="circle4" style="display:none;">
   
@@ -46,7 +46,7 @@
   <br id="torus2" style="display:none;">
   <label id="torus3" style="display:none;">Inner diameter (studs): <input id="in_d_torus" type="number" step="any" value="1"></label>
   <br id="torus4" style="display:none;">
-  <label id="torus5" style="display:none;">Degrees for rotating (smaller number = smoother): <input id="deg_torus" type="number" step="any" value="1"></label>
+  <label id="torus5" style="display:none;">Degrees for rotating cross section (smaller number = smoother): <input id="deg_torus" type="number" step="any" value="1"></label>
   <br id="torus6" style="display:none;">
   <label id="torus7" style="display:none;">Degrees for cloning it into a donut/torus: <input id="ddeg_torus" type="number" step="any" value="1"></label>
   <br id="torus8" style="display:none;">
@@ -62,20 +62,14 @@
   <script>
     //shapes calculator (by @dabl2928 on youtube)
     //started (2026 Apr 28)
-    //working (2026 Apr 29)
+    //finished (2026 Jun 4)
     //v1.0.0
-
-    //sphere
-    //cone
-    //torus
-
-    //display inputs with a for loop, show top diameter only if broken is true
 
     function round(n,d=2) {
       p=Math.pow(10,d)
       return Math.round(n*p)/p //default rounds to 2 decimals
-    
     }
+
     function input(id) {
       return document.getElementById(id)
     }
@@ -91,11 +85,10 @@
     }
 
     //grouped inputs lists
-    lcircle=['circle1','circle2','circle3','circle4',"calc_circle"]
+    lcircle=['circle1','circle2','circle3','circle4','calc_circle']
     lsphere=['sphere1','sphere2','sphere3','sphere4','calc_sphere']
     lcone=['cone1','cone2','cone3','cone4','cone5','cone6','cone9','cone10','calc_cone']
     ltorus=['torus1','torus2','torus3','torus4','torus5','torus6','torus7','torus8','calc_torus']
-
 
     function circleinputs () {
       display(lcircle,'')
@@ -310,15 +303,13 @@
 
       d=round(d/2)*2
 
-      even=(360/deg)%2==0 //checks if its even and a full number of sides
-
-      n=360/deg //number of sides
+      n=round(360/deg,0) //number of sides
 
       circle_piece=round(d*Math.tan(pi/n)/2)*2
 
-      valid=(d>=0.06 && n>=6 && deg<=60 && deg>0 && even && circle_piece>=0.06)
+      valid=(d>=0.06 && deg<=60 && deg>0 && isNearlyInteger(360/deg/2) && circle_piece>=0.06)
 
-      time=n/2*0.0346 //time to load, seems to be about 29 parts/sec + slight decrease with many stacked pieces (because of many joints)
+      time=n/2*0.0333 //time to load, seems to be about 30 parts/sec + slight decrease with many stacked pieces (because of many joints)
       
       if (valid) {
         out=`================CIRCLE================\n`
@@ -329,27 +320,19 @@
         out+=`Degrees for rotating: ${round(deg)}\n\n`
         out+=`===DIMENSIONS===\n`
         out+=`Part: ${circle_piece} x ${d} x (THICKNESS)\n`
-      } else { //ERROR: Odd number of pieces...
+      } else {
         if (d<0.06) {
           out=`ERROR: diameter is smaller than 0.06 (${d})`
         } else if (deg<=0 || deg>60) {
           out=`ERROR: Degrees for rotating aren't bigger than 0 or smaller/equal than 60 (${deg})`
         } else if (circle_piece<0.06) {
           out=`ERROR: Part width is smaller than 0.06, increase diameter or degrees for rotating (width: ${circle_piece})`
-        } else if (360%deg>=0.01) {
-        out=`ERROR: Incorrect degrees for rotation (you don't get a full number of pieces: ${round(n)})\n\n`
-        out+=`List of degrees that would work for your diameter (choose any):\n`
-        for (tn=6;tn<=3600;tn+=2) { //checks scenarios up to 3600 sides (runs 3600 times)
-          td=(360/tn) //degrees
-
-          tcircle_piece=round(d*Math.tan(pi/tn)/2)*2
-          bigenough=tcircle_piece>=0.06
-
-          nicenumber=(round(td,2)==td) //nice number means it has 2 decimal places max
-          if (nicenumber && bigenough) { //only if 2 decimals and big enough part
-            out+=` -degrees: ${td} (${tn} sides)\n`
+        } else if (!isNearlyInteger(360/deg/2)) {
+          out=`ERROR: Invalid degrees for rotating (you don't get a full number of pieces or it's not a multiple of 2: ${round(360/deg)})\n\n`
+          out+=`List of degrees that would work (choose any):\n`
+          for (tn=8;tn<7200;tn+=4) { //checks up to 7200 scenarios for correct degrees for rotating
+            td=360/tn;nicenumber=(round(td,2)==td);if(isNearlyInteger(tn/4) && nicenumber){out+=` -degrees: ${360/tn}\n`}
           }
-        }
         } else {
           out=`ERROR: Unknown error, comment your values`
         }
@@ -365,16 +348,15 @@
 
       pi=Math.PI
 
-      d=round(d/2)*2
-      even=(360/deg)%2==0 //checks if its even and a full number of sides
+      d=round(d/2)*2 //changes 1.71 to 1.72 for example (can't scale symetrically for odd last place)
       n=360/deg //number of sides
 
       circle_piece=round(d*Math.tan(pi/n)/2)*2
 
-      valid=(d>=0.06 && n>=6 && deg<=60 && deg>0 && even && circle_piece>=0.06)
+      valid=(d>=0.06 && deg<=60 && deg>0 && isNearlyInteger(360/deg/2) && circle_piece>=0.06)
 
       parts=(n/2)**2 //if 45 degrees then 16 parts
-      time=parts*0.0346 //time to load, seems to be about 29 parts/sec + slight decrease with many stacked pieces (because of many joints)
+      time=parts*0.0333 //time to load, seems to be about 30 parts/sec + slight decrease with many stacked pieces (because of many joints)
       pt=[d,circle_piece,circle_piece] //dimensions, x, y, z
       gl=n
       gh=n/2
@@ -407,24 +389,16 @@
           out=`ERROR: Degrees for rotating aren't bigger than 0 or smaller/equal than 60 (${deg})`
         } else if (circle_piece<0.06) {
           out=`ERROR: Part width is smaller than 0.06, increase diameter or degrees for rotating (width: ${circle_piece})`
-        } else if (360%deg>=0.01 || !even) {
-        out=`ERROR: Incorrect degrees for rotation (you don't get a full or even number of pieces: ${round(n)})\n\n`
-        out+=`List of degrees that would work for your diameter (choose any):\n`
-        for (tn=6;tn<=3600;tn+=2) { //checks scenarios up to 3600 sides (runs 3600 times)
-          td=(360/tn) //degrees
-
-          tcircle_piece=round(d*Math.tan(pi/tn)/2)*2
-          bigenough=tcircle_piece>=0.06
-
-          nicenumber=(round(td,2)==td) //nice number means it has 2 decimal places max
-          if (nicenumber && bigenough) { //only if 2 decimals and big enough part
-            out+=` -degrees: ${td}\n`
-          }
-        }
+        } else if (!isNearlyInteger(360/deg/2)) {
+        out=`ERROR: Invalid degrees for rotating (you don't get a full number of pieces or it's not a multiple of 2: ${round(360/deg)})\n\n`
+        out+=`List of degrees that would work (choose any):\n`
+        for (tn=8;tn<7200;tn+=4) { //checks up to 7200 scenarios for correct degrees for rotating
+          td=360/tn;nicenumber=(round(td,2)==td);if(isNearlyInteger(tn/4) && nicenumber){out+=` -degrees: ${360/tn}\n`}}
         } else {
           out=`ERROR: Unknown error, comment your values`
         }
       }
+
       input('output').textContent=out
       input('output').style.fontSize='16px'
       input('output').style.fontWeight='normal'
@@ -439,8 +413,6 @@
 
       n=360/deg
 
-      even=(360/deg)%2==0 //checks if its even and a full number of sides
-
       circle_bottom=round(bottom_d*Math.tan(Math.PI/n)/2,2)*2
       if (type==`broken`) {
         circle_top=round(top_d*Math.tan(Math.PI/n)/2,2)*2
@@ -453,11 +425,8 @@
       shape_height=round(Math.sqrt(height**2 + (bottom_d/2-top_d/2)**2),2)
       alpha=round(Math.atan(shape_height/(circle_bottom/2-circle_top/2))*180/Math.PI,2) //angle between the bottom and the side of the triangle/trapezoid
       side=round(Math.sqrt(shape_height**2 + (circle_bottom/2-circle_top/2)**2),2)
-
-      b=[circle_bottom,1,1] //bottom piece
-      t=[circle_top,1,1] //top piece
       
-      valid=(height>=0.06 && n>=6 && deg<=60 && deg>0 && even && circle_bottom>=0.06)
+      valid=(height>=0.05 && deg<=60 && deg>0 && isNearlyInteger(360/deg/2) && circle_bottom>=0.06 && !(type=='broken' && top_d<0.06))
 
       if (valid) {
         if (top_d==0) { //TRIANGLE SHAPE
@@ -474,44 +443,57 @@
           out+=`Quadrouple mirror on new piece and angle by ${alpha}\n\n`
 
           out+=`Triangle vertical side lengths: ${side} (amount in scale: ${round(side-circle_bottom)})\n`
+          out+=`Fill in the rest of empty space\n\n`
+
+          out+=`Mirror it to the other side\n\n`
+
           out+=`Degrees for rotating: ${deg}\n`          
         } else { //TRAPEZOID SHAPE
           trap_top=round((top_d * Math.tan(Math.PI/n))/2,2)*2
           trap_bottom=round((bottom_d * Math.tan(Math.PI/n))/2,2)*2
 
           out=`==========CONE==========\n`
-          out+=`Top diameter: ${top_d}\n`
-          out+=`Bottom diameter: ${bottom_d}\n`
-          out+=`Cone height: ${height}\n`
-          out+=`Degrees for rotating: ${360/n}\n`
-          out+=`Trapezoid top length: ${trap_top} (amount in scale: ${circle_top/2-1})\n`
-          out+=`Trapezoid bottom length: ${trap_bottom} (amount in scale: ${circle_bottom/2-1})\n`
-          out+=`Trapezoid vertical side lengths: ${side}\n`
-          out+=`Trapezoid height: ${shape_height}\n`
-          out+=`Alpha: ${alpha} deg (trapezoid shape, side lines angle)\n`
+          out+=`Bottom diameter: ${bottom_d} (amount in scale: ${round(bottom_d/2-1)})\n`
+          out+=`Bottom circle piece: ${circle_bottom} (amount in scale: ${round(circle_bottom/2-1)})\n`
+          out+=`Bottom height: 0.05 (amount in scale: 1.95)\n\n`
+
           out+=`Trapezoid tilt angle: ${tilt_angle} deg\n`
+          out+=`Length: 0.05 (amount in scale: ${round(bottom_d-0.06)})\n\n`
+
+          out+=`Quadrouple mirror on new piece and angle by ${alpha}\n\n`
+
+          out+=`Trapezoid vertical side lengths: ${side} (amount in scale: ${round(side-circle_bottom)})\n`
+          out+=`Clone bottom piece of trapezoid upwards by ${round(shape_height-0.05)}\n`
+          out+=`Trapezoid top length: ${trap_top} (amount in scale: ${round((circle_top-circle_bottom)/2)})\n`
+          out+=`Trapezoid bottom length: ${trap_bottom} (amount in scale: ${round(circle_bottom/2-1)})\n\n`
+
+          out+=`Scale down the top of the trapezoid using: ${round(shape_height-0.1)}\n`
+          out+=`Fill in the rest of empty space\n\n`
+
+          out+=`Mirror it to the other side\n\n`
+
+          out+=`Clone the bottom piece up by ${round(height-0.05)}\n`
+          out+=`Top diameter: ${top_d} (amount in scale: ${round((bottom_d-top_d)/2)})\n`
+          out+=`Top circle piece: ${circle_top} (amount in scale: ${round((circle_bottom-circle_top)/2)})\n\n`
+
+          out+=`Degrees for rotating: ${360/n}\n`
         }
-      } else { //ERRORS
-        if (bottom_d<0.06) {
-          out=`ERROR: bottom diameter is smaller than 0.06 (${bottom_d})`
+      } else {
+        if (height<0.05) {
+          out=`ERROR: height is smaller than 0.05 (entered ${height})`
+        } else if (circle_bottom<0.06) {
+          out=`ERROR: bottom circle piece is smaller than 0.06 (increase diameter or degrees for rotating)`
         } else if (type=='broken' && top_d<0.06) {
           out=`ERROR: top diameter is smaller than 0.06 (${top_d})`
-        } else if (360%deg>=0.01) {
-        out=`ERROR: Incorrect degrees for rotation (you don't get a full number of pieces: ${round(n)})\n\n`
-        out+=`List of degrees that would work for your diameter (choose any):\n`
-        for (tn=6;tn<=3600;tn+=2) { //checks scenarios up to 3600 sides (runs 3600 times)
-          td=(360/tn) //degrees
-
-          tcircle_piece=round(d*Math.tan(pi/tn)/2)*2
-          bigenough=tcircle_piece>=0.06
-
-          nicenumber=(round(td,2)==td) //nice number means it has 2 decimal places max
-          if (nicenumber && bigenough) { //only if 2 decimals and big enough part
-            out+=` -degrees: ${td}\n`
-          }
-        }
+        } else if (top_d>bottom_d) {
+          out=`ERROR: top diameter is bigger than bottom diameter`
+        } else if (!isNearlyInteger(360/deg/2)) {
+        out=`ERROR: Invalid degrees for rotating (you don't get a full number of pieces or it's not a multiple of 2: ${round(360/deg)})\n\n`
+        out+=`List of degrees that would work (choose any):\n`
+        for (tn=8;tn<7200;tn+=4) { //checks up to 7200 scenarios for correct degrees for rotating
+          td=360/tn;nicenumber=(round(td,2)==td);if(isNearlyInteger(tn/4) && nicenumber){out+=` -degrees: ${360/tn}\n`}}
         } else {
-          out=`ERROR: Unknown error, comment your values`
+          out=`ERROR: Unknown error, comment the values you used`
         }
       }
 
@@ -533,42 +515,61 @@
       base_CP = 2*round(cross*Math.tan(Math.PI/q)) //center piece for cross section circle only
 
       out=`================TORUS================\n`
-      out+=`Cross section diameter: ${cross*2} (amount in scale: ${(cross*2)/2-1})\n`
-      out+=`Cross section piece height: ${round(base_CP)} (amount in scale: ${base_CP/2-1})\n`
-      out+=`Cross section piece width: ${round(base_CP)} (amount in scale: ${base_CP/2-1})\n`
+      out+=`Cross section diameter: ${round(cross*2)} (amount in scale: ${round((cross*2)/2-1)})\n`
+      out+=`Cross section piece height: ${round(base_CP)} (amount in scale: ${round(base_CP/2-1)})\n`
+      out+=`Cross section piece width: ${round(base_CP)} (amount in scale: ${round(base_CP/2-1)})\n`
       
-      out+=`Degrees for rotating the cross section: ${360/q}\n\n`
+      valid=(outer_d>inner_d && d<=60 && d>0 && dd<=60 && dd>0 && outer_d>=0.06 && inner_d>=0.06 && isNearlyInteger(360/d/4) && isNearlyInteger(360/dd/2))
 
-      for (i=0;i<Math.floor(q/4+1);i++) {
+      if (valid) {
+        out+=`Degrees for rotating the cross section: ${360/q}\n\n`
+
+        for (i=0;i<Math.floor(q/4+1);i++) {
           gap_fix = base_CP/2*Math.cos(Math.PI/180 * i*360/q)
           position = radius + cross*Math.cos(Math.PI/2 - Math.PI/180 * i*360/q) + gap_fix
           length = 2*round((2*position*Math.tan(Math.PI/qd)/2),2)
           AIS = round((length - base_CP)/2,2)
-          out+=`-${i+1}th piece length: ${length} (amount in scale: ${AIS})`
+          out+=`-${i+1}th piece length: ${round(length)} (amount in scale: ${AIS})`
           if (i==0) {
             out+=` the piece at the bottom and top\n`
           } else if (i==1) {
             out+=` move outwards now from top and bottom\n`
           } else {
-            out+=`\n`
+            out+=`\n` 
           }
-      }
-      out+=`\nClone it to the other side using ${2*radius}\n`
-      out+=`Degrees for rotating the entire donut: ${360/qd}\n\n`
-
-      valid=(d<=60 && d>0 && dd<=60 && dd>0 && outer_d>=0.05 && inner_d>=0.05 && isNearlyInteger(360/d) && isNearlyInteger(360/dd) && isNearlyInteger(q/4))
-
-      if (valid) {
-        out+=``
+        }
+        out+=`\nClone it to the other side using ${round(2*radius)}\n`
+        out+=`Degrees for rotating the entire donut: ${round(360/qd)}\n\n`
       } else {
-        out=`ERROR`
+        if (d>60 || d<0) {
+          out=`ERROR: Degrees for cross section aren't in 0 to 60 range (entered ${d})\n`
+        } else if (dd>60 || dd<0) {
+          out=`ERROR: Degrees for cloning it into a donut aren't in 0 to 60 range (entered ${d})\n`
+        } else if (outer_d<0.06) {
+          out=`ERROR: Outer diameter is too small (must be atleast 0.06, not ${outer_d})\n`
+        } else if (inner_d<0.06) {
+          out=`ERROR: Outer diameter is too small (must be atleast 0.06, not ${outer_d})\n`
+        } else if (outer_d<=inner_d) {
+          out=`ERROR: Outer diameter has to be strictly bigger than inner diameter\n`
+        } else if (!isNearlyInteger(360/d/4)) {
+          out=`ERROR: Invalid number of degrees for section (you don't get a full number of pieces or it's not a multiple of 4: ${round(360/d)})\n\n`
+          out+=`List of degrees that would work (choose any):\n`
+          for (tn=8;tn<7200;tn+=4) { //checks up to 7200 scenarios for correct degrees for rotating
+            td=360/tn;nicenumber=(round(td,2)==td);if(isNearlyInteger(tn/4) && nicenumber){out+=` -degrees: ${360/tn}\n`}}
+        } else if (!isNearlyInteger(360/dd/2)) {
+          out=`ERROR: Invalid number of degrees for donut (you don't get a full number of pieces or it's not a multiple of 2: ${round(360/d)})\n\n`
+          out+=`List of degrees that would work (choose any):\n`
+          for (tn=8;tn<7200;tn+=4) { //checks up to 7200 scenarios for correct degrees for rotating
+            td=360/tn;nicenumber=(round(td,2)==td);if(isNearlyInteger(tn/2) && nicenumber){out+=` -degrees: ${360/tn}\n`}}
+        } else {
+          out=`ERROR: Unknown (comment which values you used)`
+        }
       }
 
       input('output').textContent=out
       input('output').style.fontSize='16px'
       input('output').style.fontWeight='normal'
     }
-
 
     input("circle").onclick=circleinputs
     input("sphere").onclick=sphereinputs
