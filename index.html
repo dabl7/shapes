@@ -69,13 +69,13 @@
   <button id="calc_torus" style="display:none;">Calculate</button>  
 
   <pre style="font-size: 20px;font-weight: normal" id="output">(Choose a mode)</pre>
-  <br><pre style="font-size: 9px;">v1.0.0 (YouTube: @dabl2829)</pre>
+  <br><pre style="font-size: 9px;">v1.1.0 (YouTube: @dabl2829)</pre>
 
   <script>
     //shapes calculator (by @dabl2928 on youtube)
     //started (2026 Apr 28)
-    //finished (2026 Jun 4)
-    //v1.0.0
+    //v1.0.0 - initial release (2026 Jun 4)
+    //v1.1.0 - added prime factorisation for degrees to save time when cloning and rotating (2026 Aug 1)
 
     function round(n,d=2) {
       p=Math.pow(10,d)
@@ -88,6 +88,35 @@
 
     function isNearlyInteger(x,e=1e-9) {
       return Math.abs(Math.round(x)-x)<e //allows numbers like 2.000000000004 or 1.999999999999998 or whatever (computer math bug because its binary)
+    }
+
+    function primefactorisation(n) {const factors=[];if (!Number.isInteger(n)||n<2) {return factors}
+      while (n%2===0) {factors.push(2);n /= 2};let divisor = 3
+      while (divisor * divisor <= n) {while (n % divisor === 0) {factors.push(divisor);n/=divisor} divisor+=2}
+      if (n>1){factors.push(n)};return factors} //returns a list of prime factors of the number inputted
+
+    function arraymult(arr,n){
+      product=1
+      for (i=0;i<=n && i<arr.length;i++){
+        product*=arr[i]
+      }
+      return product
+    }
+
+    function complete(deg) {
+      if (isNearlyInteger(360/deg)) {
+        parts=round(360/deg)
+        factors=primefactorisation(parts)
+        str=``
+        for (n=0;n<factors.length;n++) {
+          if (n==0) {str+=`\n\n\nOptional shortcut for ${deg} degree rotating and cloning:\n`}
+          smaller=arraymult(factors,n)
+          str+=` -rotate and clone by ${360/smaller} for ${factors[n]-1} time(s)\n`          
+        }
+        return str
+      } else {
+        return ``
+      }
     }
 
     function display(list,onoff) {
@@ -332,6 +361,7 @@
         out+=`Degrees for rotating: ${round(deg)}\n\n`
         out+=`===DIMENSIONS===\n`
         out+=`Part: ${circle_piece} x ${d} x (THICKNESS)\n`
+        out+=complete(deg)
       } else {
         if (d<0.06) {
           out=`ERROR: diameter is smaller than 0.06 (${d})`
@@ -394,6 +424,7 @@
         out+=`Degrees for rotating: ${round(deg)}\n\n`
         out+=`===DIMENSIONS===\n`
         out+=`Part: ${circle_piece} x ${circle_piece} x ${d}\n`
+        out+=complete(deg)
       } else {
         if (d<0.06) {
           out=`ERROR: diameter is smaller than 0.06 (${d})`
@@ -490,6 +521,7 @@
 
           out+=`Degrees for rotating: ${360/n}\n`
         }
+        out+=complete(deg)
       } else {
         if (height<0.05) {
           out=`ERROR: height is smaller than 0.05 (entered ${height})`
@@ -552,6 +584,7 @@
         }
         out+=`\nClone it to the other side using ${round(2*radius)}\n`
         out+=`Degrees for rotating the entire donut: ${round(360/qd)}\n\n`
+        if (d!=dd) {out+=complete(d);out+=complete(dd)} else {out+=complete(d)}
       } else {
         if (d>60 || d<0) {
           out=`ERROR: Degrees for cross section aren't in 0 to 60 range (entered ${d})\n`
