@@ -111,7 +111,7 @@
         for (n=0;n<factors.length;n++) {
           if (n==0) {str+=`\n\n\nOptional shortcut for ${deg} degree rotating and cloning:\n`}
           smaller=arraymult(factors,n)
-          str+=` -rotate and clone by ${360/smaller} for ${factors[n]-1} time(s)\n`          
+          if (360/smaller!=180) {str+=` -rotate and clone by ${360/smaller} for ${factors[n]-1} time(s)\n`}
         }
         return str
       } else {
