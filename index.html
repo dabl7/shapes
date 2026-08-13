@@ -24,7 +24,7 @@
   <label id="circle5" style="display:none;">Degrees for rotating (smaller number = smoother): <input id="deg_circle" type="number" step="any" value="15"></label>
   <br id="circle6" style="display:none;">
   
-  <label id="sphere0" style="display:none;">Explained in: <a href="https://www.youtube.com/">Not uploaded yet...</a></label>
+  <label id="sphere0" style="display:none;">Explained in: <a href="https://www.youtube.com/watch?v=Ff6ipyaaz-s">Build a Boat - Sphere tutorial</a></label>
   <br id="sphere1" style="display:none;">
   <br id="sphere2" style="display:none;">
   <label id="sphere3" style="display:none;">Sphere diameter (studs): <input id="d_sphere" type="number" step="any" value="20"></label>
@@ -69,16 +69,19 @@
   <button id="calc_torus" style="display:none;">Calculate</button>  
 
   <pre style="font-size: 20px;font-weight: normal" id="output">(Choose a mode)</pre>
-  <br><pre style="font-size: 9px;">v1.1.1 (YouTube: @dabl2829)</pre>
+  <br><pre style="font-size: 9px;">v1.2.0 (YouTube: @dabl2829)</pre>
 
   <script>
     //shapes calculator (by @dabl2928 on youtube)
     //started (2026 Apr 28)
     //v1.0.0 - initial release (2026 Jun 4)
     //v1.1.0 - added prime factorisation for degrees to save time when cloning and rotating (2026 Aug 1)
-    //v1.1.1 - added link for new video (2026 Aug 4)
+    //v1.1.1 - added circle tutorial link (2026 Aug 4)
+    //v1.2.0 - updated to 3 decimals and added sphere tutorial link (2026 Aug 8)
 
-    function round(n,d=2) {
+    decimals=3 //number of decimals to round to
+
+    function round(n,d=decimals) {
       p=Math.pow(10,d)
       return Math.round(n*p)/p //default rounds to 2 decimals
     }
@@ -457,24 +460,24 @@
 
       n=360/deg
 
-      circle_bottom=round(bottom_d*Math.tan(Math.PI/n)/2,2)*2
+      circle_bottom=round(bottom_d*Math.tan(Math.PI/n)/2)*2
       if (type==`broken`) {
-        circle_top=round(top_d*Math.tan(Math.PI/n)/2,2)*2
+        circle_top=round(top_d*Math.tan(Math.PI/n)/2)*2
       } else {
         circle_top=0
         top_d=0
       }
 
-      tilt_angle=round(Math.atan(height/(bottom_d/2-top_d/2))*180/Math.PI,2) //angle between base and cone wall
-      shape_height=round(Math.sqrt(height**2 + (bottom_d/2-top_d/2)**2),2)
-      alpha=round(Math.atan(shape_height/(circle_bottom/2-circle_top/2))*180/Math.PI,2) //angle between the bottom and the side of the triangle/trapezoid
-      side=round(Math.sqrt(shape_height**2 + (circle_bottom/2-circle_top/2)**2),2)
+      tilt_angle=round(Math.atan(height/(bottom_d/2-top_d/2))*180/Math.PI) //angle between base and cone wall
+      shape_height=round(Math.sqrt(height**2 + (bottom_d/2-top_d/2)**2),
+      alpha=round(Math.atan(shape_height/(circle_bottom/2-circle_top/2))*180/Math.PI)) //angle between the bottom and the side of the triangle/trapezoid
+      side=round(Math.sqrt(shape_height**2 + (circle_bottom/2-circle_top/2)**2))
       
       valid=(height>=0.05 && deg<=60 && deg>0 && isNearlyInteger(360/deg/2) && circle_bottom>=0.06 && !(type=='broken' && top_d<0.06))
 
       if (valid) {
         if (top_d==0) { //TRIANGLE SHAPE
-          tri_base=round((bottom_d * Math.tan(Math.PI/n))/2,2)*2
+          tri_base=round((bottom_d * Math.tan(Math.PI/n))/2)*2
 
           out=`==========CONE==========\n`
           out+=`Bottom diameter: ${bottom_d} (amount in scale: ${round(bottom_d/2-1)})\n`
@@ -493,8 +496,8 @@
 
           out+=`Degrees for rotating: ${deg}\n`          
         } else { //TRAPEZOID SHAPE
-          trap_top=round((top_d * Math.tan(Math.PI/n))/2,2)*2
-          trap_bottom=round((bottom_d * Math.tan(Math.PI/n))/2,2)*2
+          trap_top=round((top_d * Math.tan(Math.PI/n))/2)*2
+          trap_bottom=round((bottom_d * Math.tan(Math.PI/n))/2)*2
 
           out=`==========CONE==========\n`
           out+=`Bottom diameter: ${bottom_d} (amount in scale: ${round(bottom_d/2-1)})\n`
@@ -572,8 +575,8 @@
         for (i=0;i<Math.floor(q/4+1);i++) {
           gap_fix = base_CP/2*Math.cos(Math.PI/180 * i*360/q)
           position = radius + cross*Math.cos(Math.PI/2 - Math.PI/180 * i*360/q) + gap_fix
-          length = 2*round((2*position*Math.tan(Math.PI/qd)/2),2)
-          AIS = round((length - base_CP)/2,2)
+          length = 2*round((2*position*Math.tan(Math.PI/qd)/2))
+          AIS = round((length - base_CP)/2)
           out+=`-${i+1}th piece length: ${round(length)} (amount in scale: ${AIS})`
           if (i==0) {
             out+=` the piece at the bottom and top\n`
