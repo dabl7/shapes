@@ -69,7 +69,7 @@
   <button id="calc_torus" style="display:none;">Calculate</button>  
 
   <pre style="font-size: 20px;font-weight: normal" id="output">(Choose a mode)</pre>
-  <br><pre style="font-size: 9px;">v1.2.0 (YouTube: @dabl2829)</pre>
+  <br><pre style="font-size: 9px;">v1.2.1 (YouTube: @dabl2829)</pre>
 
   <script>
     //shapes calculator (by @dabl2928 on youtube)
@@ -78,6 +78,7 @@
     //v1.1.0 - added prime factorisation for degrees to save time when cloning and rotating (2026 Aug 1)
     //v1.1.1 - added circle tutorial link (2026 Aug 4)
     //v1.2.0 - updated to 3 decimals and added sphere tutorial link (2026 Aug 8)
+    //v1.2.1 - fixed a cone bug (2026 Aug 8)
 
     decimals=3 //number of decimals to round to
 
@@ -362,7 +363,7 @@
 
         out+=`Diameter: ${d} (amount in scale: ${round(d/2-1)}, both sides)\n`
         out+=`Width: ${circle_piece} (amount in scale: ${round(circle_piece/2-1)}, both sides)\n\n`
-        out+=`Degrees for rotating: ${round(deg)}\n\n`
+        out+=`Degrees for rotating: ${round(deg,2)}\n\n`
         out+=`===DIMENSIONS===\n`
         out+=`Part: ${circle_piece} x ${d} x (THICKNESS)\n`
         out+=complete(deg)
@@ -425,7 +426,7 @@
 
         out+=`Diameter: ${d} (amount in scale: ${round(d/2-1)}, both sides)\n`
         out+=`Width: ${circle_piece} (amount in scale: ${round(circle_piece/2-1)}, four sides)\n\n`
-        out+=`Degrees for rotating: ${round(deg)}\n\n`
+        out+=`Degrees for rotating: ${round(deg,2)}\n\n`
         out+=`===DIMENSIONS===\n`
         out+=`Part: ${circle_piece} x ${circle_piece} x ${d}\n`
         out+=complete(deg)
@@ -468,9 +469,9 @@
         top_d=0
       }
 
-      tilt_angle=round(Math.atan(height/(bottom_d/2-top_d/2))*180/Math.PI) //angle between base and cone wall
-      shape_height=round(Math.sqrt(height**2 + (bottom_d/2-top_d/2)**2),
-      alpha=round(Math.atan(shape_height/(circle_bottom/2-circle_top/2))*180/Math.PI)) //angle between the bottom and the side of the triangle/trapezoid
+      tilt_angle=round(Math.atan(height/(bottom_d/2-top_d/2))*180/Math.PI,2) //angle between base and cone wall
+      shape_height=round(Math.sqrt(height**2+(bottom_d/2-top_d/2)**2))
+      alpha=round(Math.atan(shape_height/(circle_bottom/2-circle_top/2))*180/Math.PI,2) //angle between the bottom and the side of the triangle/trapezoid
       side=round(Math.sqrt(shape_height**2 + (circle_bottom/2-circle_top/2)**2))
       
       valid=(height>=0.05 && deg<=60 && deg>0 && isNearlyInteger(360/deg/2) && circle_bottom>=0.06 && !(type=='broken' && top_d<0.06))
@@ -494,7 +495,7 @@
 
           out+=`Mirror it to the other side\n\n`
 
-          out+=`Degrees for rotating: ${deg}\n`          
+          out+=`Degrees for rotating: ${round(deg,2)}\n`
         } else { //TRAPEZOID SHAPE
           trap_top=round((top_d * Math.tan(Math.PI/n))/2)*2
           trap_bottom=round((bottom_d * Math.tan(Math.PI/n))/2)*2
@@ -523,7 +524,7 @@
           out+=`Top diameter: ${top_d} (amount in scale: ${round((bottom_d-top_d)/2)})\n`
           out+=`Top circle piece: ${circle_top} (amount in scale: ${round((circle_bottom-circle_top)/2)})\n\n`
 
-          out+=`Degrees for rotating: ${360/n}\n`
+          out+=`Degrees for rotating: ${round(360/n,2)}\n`
         }
         out+=complete(deg)
       } else {
@@ -570,7 +571,7 @@
       valid=(outer_d>inner_d && d<=60 && d>0 && dd<=60 && dd>0 && outer_d>=0.06 && inner_d>=0.06 && isNearlyInteger(360/d/4) && isNearlyInteger(360/dd/2))
 
       if (valid) {
-        out+=`Degrees for rotating the cross section: ${360/q}\n\n`
+        out+=`Degrees for rotating the cross section: ${round(360/q,2)}\n\n`
 
         for (i=0;i<Math.floor(q/4+1);i++) {
           gap_fix = base_CP/2*Math.cos(Math.PI/180 * i*360/q)
@@ -587,7 +588,7 @@
           }
         }
         out+=`\nClone it to the other side using ${round(2*radius)}\n`
-        out+=`Degrees for rotating the entire donut: ${round(360/qd)}\n\n`
+        out+=`Degrees for rotating the entire donut: ${round(360/qd,2)}\n\n`
         if (d!=dd) {out+=complete(d);out+=complete(dd)} else {out+=complete(d)}
       } else {
         if (d>60 || d<0) {
